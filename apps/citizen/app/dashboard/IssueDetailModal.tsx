@@ -30,10 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { MapPin, Calendar, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { MapPin, Calendar, Pencil, Trash2, ExternalLink, DollarSign, TrendingDown, Banknote } from "lucide-react";
 import { supabase } from "@repo/lib/supabaseClient";
 import type { Issue } from "@repo/lib/types";
 import toast from "react-hot-toast";
+import ProgressTimeline from "../components/ProgressTimeline";
 
 interface IssueDetailModalProps {
   issue: Issue | null;
@@ -203,6 +204,15 @@ export default function IssueDetailModal({
               </p>
             </div>
 
+            {/* Progress Timeline */}
+            <ProgressTimeline
+              currentStatus={issue.status}
+              createdAt={issue.created_at}
+              estimatedStartDate={issue.estimated_start_date}
+              estimatedCompletionDate={issue.estimated_completion_date}
+              actualCompletionDate={issue.actual_completion_date}
+            />
+
             {/* Location */}
             {(issue.location || (issue.latitude && issue.longitude)) && (
               <div>
@@ -248,6 +258,110 @@ export default function IssueDetailModal({
                   "This issue has been resolved. Thank you for reporting!"}
               </p>
             </div>
+
+            {/* Financial Transparency - Only show for resolved or in-progress issues */}
+            {(issue.status === 'Resolved' || issue.status === 'In Progress') && 
+             (issue.sanctioned_amount || issue.used_amount) && (
+              <div className="bg-green-50 border border-green-200 p-5 rounded-lg">
+                <h3 className="font-semibold text-green-900 mb-4 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" />
+                  Financial Transparency
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Sanctioned Amount */}
+                  {issue.sanctioned_amount && (
+                    <div className="bg-white p-4 rounded-lg border border-green-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-600">Budget Approved</span>
+                        <Banknote className="w-4 h-4 text-green-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-green-700">
+                        ₹{Number(issue.sanctioned_amount).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Used Amount */}
+                  {issue.used_amount !== null && issue.used_amount !== undefined && (
+                    <div className="bg-white p-4 rounded-lg border border-blue-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-600">Amount Spent</span>
+                        <DollarSign className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-blue-700">
+                        ₹{Number(issue.used_amount).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Savings */}
+                  {issue.sanctioned_amount && issue.used_amount !== null && issue.used_amount !== undefined && (
+                    <div className="bg-white p-4 rounded-lg border border-emerald-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-600">
+                          {Number(issue.sanctioned_amount) - Number(issue.used_amount) >= 0 ? 'Savings' : 'Excess'}
+                        </span>
+                        <TrendingDown className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <p className={`text-2xl font-bold ${
+                        Number(issue.sanctioned_amount) - Number(issue.used_amount) >= 0 
+                          ? 'text-emerald-700' 
+                          : 'text-red-700'
+                      }`}>
+                        ₹{Math.abs(Number(issue.sanctioned_amount) - Number(issue.used_amount)).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Expense Breakdown */}
+                {issue.amount_breakdown && typeof issue.amount_breakdown === 'object' && (
+                  <div className="mt-4 bg-white p-4 rounded-lg border border-green-200">
+                    <h4 className="font-medium text-gray-900 mb-3 text-sm">Expense Breakdown</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {Object.entries(issue.amount_breakdown).map(([key, value]) => (
+                        <div key={key} className="text-center p-2 bg-gray-50 rounded">
+                          <p className="text-xs text-gray-600 capitalize mb-1">{key}</p>
+                          <p className="text-sm font-semibold text-gray-900">
+                            ₹{Number(value).toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {issue.status === 'Resolved' && (
+                  <p className="text-xs text-green-700 mt-3 italic">
+                    💡 This financial information is now public to ensure transparency in civic spending.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Priority and Complaint Count */}
+            {(issue.priority || (issue.complaint_count && issue.complaint_count > 1)) && (
+              <div className="flex flex-wrap gap-3">
+                {issue.priority && (
+                  <div className={`px-4 py-2 rounded-lg border ${
+                    issue.priority === 'high' ? 'bg-red-50 border-red-200 text-red-800' :
+                    issue.priority === 'medium' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
+                    'bg-gray-50 border-gray-200 text-gray-800'
+                  }`}>
+                    <span className="text-sm font-medium">
+                      Priority: {issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
+                    </span>
+                  </div>
+                )}
+                {issue.complaint_count && issue.complaint_count > 1 && (
+                  <div className="px-4 py-2 rounded-lg border bg-orange-50 border-orange-200">
+                    <span className="text-sm font-medium text-orange-800">
+                      {issue.complaint_count} citizens reported this issue
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4 border-t">
