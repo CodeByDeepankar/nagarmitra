@@ -99,27 +99,36 @@ export default async function IssueDetailPage({
           </div>
 
           {/* Location */}
-          {typedIssue.latitude && typedIssue.longitude && (
+          {(typedIssue.location || (typedIssue.latitude && typedIssue.longitude)) && (
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-3">Location</h2>
               <div className="bg-gray-100 p-4 rounded-lg">
-                <p className="text-gray-700 mb-2">
-                  📍 Coordinates: {typedIssue.latitude}, {typedIssue.longitude}
-                </p>
-                <a
-                  href={`https://www.google.com/maps?q=${typedIssue.latitude},${typedIssue.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  View on Google Maps →
-                </a>
-                {/* Placeholder for map - Mapbox integration would go here */}
-                <div className="mt-4 bg-gray-200 h-64 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">
-                    Map Preview (Mapbox integration placeholder)
+                {typedIssue.location && typeof typedIssue.location === 'object' && !Array.isArray(typedIssue.location) && 'address' in typedIssue.location && (
+                  <p className="text-gray-700 mb-2">
+                    📍 {String(typedIssue.location.address)}
                   </p>
-                </div>
+                )}
+                {typedIssue.latitude && typedIssue.longitude && (
+                  <>
+                    <p className="text-gray-600 text-sm mb-2">
+                      Coordinates: {typedIssue.latitude}, {typedIssue.longitude}
+                    </p>
+                    <a
+                      href={`https://www.google.com/maps?q=${typedIssue.latitude},${typedIssue.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      View on Google Maps →
+                    </a>
+                    {/* Placeholder for map - Mapbox integration would go here */}
+                    <div className="mt-4 bg-gray-200 h-64 rounded-lg flex items-center justify-center">
+                      <p className="text-gray-500">
+                        Map Preview (Mapbox integration placeholder)
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}

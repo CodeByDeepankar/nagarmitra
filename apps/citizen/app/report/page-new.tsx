@@ -282,7 +282,7 @@ function ReportPageContent() {
                 </Label>
                 <Select 
                   value={formData.category} 
-                  onValueChange={(value: string) => {
+                  onValueChange={(value) => {
                     setFormData({ ...formData, category: value });
                     if (errors.category) setErrors({ ...errors, category: "" });
                   }}

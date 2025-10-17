@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS issues (
   status TEXT DEFAULT 'Pending' CHECK (status IN ('Pending', 'In Progress', 'Resolved')),
   image_url TEXT,
   latitude DOUBLE PRECISION,
-  longitude DOUBLE PRECISION
+  longitude DOUBLE PRECISION,
+  location JSONB
 );
 
 -- Create comments table
