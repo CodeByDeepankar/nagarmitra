@@ -29,9 +29,11 @@ export function IssueDetailModal({ issue, onClose, onUpdate }: IssueDetailModalP
   // Update form state
   const [status, setStatus] = useState(issue.status);
   const [sanctionedAmount, setSanctionedAmount] = useState(issue.sanctioned_amount || 0);
-  const [amountUsed, setAmountUsed] = useState(0);
-  const [usageBreakdown, setUsageBreakdown] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [amountUsed, setAmountUsed] = useState(issue.used_amount || 0);
+  const [usageBreakdown, setUsageBreakdown] = useState(
+    issue.amount_breakdown ? JSON.stringify(issue.amount_breakdown) : ""
+  );
+  const [startDate, setStartDate] = useState(issue.estimated_start_date || "");
   const [estimatedCompletion, setEstimatedCompletion] = useState(issue.estimated_completion_date || "");
   const [progressNotes, setProgressNotes] = useState(issue.progress_notes || "");
   const [workPhotos, setWorkPhotos] = useState<File[]>([]);
@@ -49,18 +51,28 @@ export function IssueDetailModal({ issue, onClose, onUpdate }: IssueDetailModalP
   const handleSaveChanges = async () => {
     setUpdating(true);
     try {
-      // TODO: Upload work photos to Supabase storage
-      const updates = {
+      // Prepare the updates object
+      const updates: any = {
         status,
-        sanctioned_amount: sanctionedAmount,
-        estimated_completion_date: estimatedCompletion,
-        progress_notes: progressNotes,
+        sanctioned_amount: sanctionedAmount || null,
+        used_amount: amountUsed || null,
+        estimated_start_date: startDate || null,
+        estimated_completion_date: estimatedCompletion || null,
+        progress_notes: progressNotes || null,
       };
+
+      // Only add amount_breakdown if it has a value
+      if (usageBreakdown && usageBreakdown.trim()) {
+        updates.amount_breakdown = usageBreakdown;
+      }
+
+      console.log("Submitting updates:", updates);
       
       await onUpdate(issue.id, updates);
       setShowUpdateForm(false);
     } catch (error) {
-      console.error("Error updating issue:", error);
+      console.error("Error in handleSaveChanges:", error);
+      alert(error instanceof Error ? error.message : "Failed to update issue");
     } finally {
       setUpdating(false);
     }

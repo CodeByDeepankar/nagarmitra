@@ -83,12 +83,28 @@ export default function AdminDashboard() {
 
   async function handleUpdateIssue(issueId: string, updates: Partial<Issue>) {
     try {
-      const { error } = await supabase
+      console.log("Updating issue:", issueId);
+      console.log("Updates object:", JSON.stringify(updates, null, 2));
+      console.log("Update keys:", Object.keys(updates));
+      
+      const { data, error } = await supabase
         .from("issues")
         .update(updates)
-        .eq("id", issueId);
+        .eq("id", issueId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          fullError: error
+        });
+        throw new Error(error.message || "Failed to update issue");
+      }
+
+      console.log("Update successful:", data);
 
       // Update local state
       setIssues(prevIssues =>
@@ -99,9 +115,11 @@ export default function AdminDashboard() {
 
       // Close modal
       setSelectedIssue(null);
+      
+      alert("Issue updated successfully!");
     } catch (error) {
       console.error("Error updating issue:", error);
-      alert("Failed to update issue. Please try again.");
+      alert(`Failed to update issue: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
