@@ -24,6 +24,7 @@ import {
   Search
 } from "lucide-react";
 import { Input } from "../components/ui/input";
+import IssueDetailModal from "./IssueDetailModal";
 
 const getBadgeVariant = (status: string) => {
   switch (status) {
@@ -56,33 +57,50 @@ function DashboardPageContent() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchIssues = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('issues')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error(error);
+      } else {
+        setIssues((data || []) as Issue[]);
+      }
+    } catch (error) {
+      console.error("Error fetching issues:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchIssues() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data, error } = await supabase
-          .from('issues')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error(error);
-        } else {
-          setIssues((data || []) as Issue[]);
-        }
-      } catch (error) {
-        console.error("Error fetching issues:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchIssues();
   }, []);
+
+  const handleIssueClick = (issue: Issue) => {
+    setSelectedIssue(issue);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedIssue(null);
+  };
+
+  const handleIssueUpdated = () => {
+    fetchIssues();
+  };
 
   const stats = {
     total: issues.length,
@@ -259,19 +277,22 @@ function DashboardPageContent() {
               ) : (
                 <div className="space-y-4">
                   {filteredIssues.map((issue) => (
-                    <Link key={issue.id} href={`/issues/${issue.id}`}>
-                      <Card className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] overflow-hidden border-l-4 border-l-blue-600">
-                        <div className="flex flex-col md:flex-row">
-                          {issue.image_url && (
-                            <div className="w-full md:w-48 h-48 md:h-auto flex-shrink-0">
-                              <img
-                                src={issue.image_url}
-                                alt={issue.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 p-6">
+                    <Card 
+                      key={issue.id}
+                      onClick={() => handleIssueClick(issue)}
+                      className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] overflow-hidden border-l-4 border-l-blue-600"
+                    >
+                      <div className="flex flex-col md:flex-row">
+                        {issue.image_url && (
+                          <div className="w-full md:w-48 h-48 md:h-auto flex-shrink-0">
+                            <img
+                              src={issue.image_url}
+                              alt={issue.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 p-6">
                             <div className="flex items-start justify-between mb-3">
                               <h3 className="text-xl font-semibold text-gray-900 pr-4 line-clamp-2">
                                 {issue.title}
@@ -325,8 +346,7 @@ function DashboardPageContent() {
                             </div>
                           </div>
                         </div>
-                      </Card>
-                    </Link>
+                    </Card>
                   ))}
                 </div>
               )}
@@ -334,6 +354,14 @@ function DashboardPageContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Issue Detail Modal */}
+      <IssueDetailModal
+        issue={selectedIssue}
+        open={isModalOpen}
+        onOpenChange={handleModalClose}
+        onIssueUpdated={handleIssueUpdated}
+      />
     </div>
   );
 }
