@@ -1,27 +1,24 @@
-import { type JSX } from "react";
+import { type JSX, type ReactNode } from "react";
 
 export function Card({
-  className,
+  className = "",
   title,
   children,
-  href,
+  onClick,
 }: {
   className?: string;
-  title: string;
-  children: React.ReactNode;
-  href: string;
+  title?: string;
+  children: ReactNode;
+  onClick?: () => void;
 }): JSX.Element {
   return (
-    <a
-      className={className}
-      href={`${href}?utm_source=create-turbo&utm_medium=basic&utm_campaign=create-turbo"`}
-      rel="noopener noreferrer"
-      target="_blank"
+    <div
+      className={`bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow ${className}`}
+      onClick={onClick}
     >
-      <h2>
-        {title} <span>-&gt;</span>
-      </h2>
-      <p>{children}</p>
-    </a>
+      {title && <h3 className="text-xl font-semibold mb-3">{title}</h3>}
+      {children}
+    </div>
   );
 }
+
