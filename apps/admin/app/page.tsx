@@ -19,8 +19,17 @@ import {
   Calendar,
   Eye,
   User,
-  Search
+  Search,
+  LayoutDashboard,
+  Plus,
+  Map,
+  BarChart3,
+  Building2,
+  Users as UsersIcon,
+  Bell
 } from "lucide-react";
+
+type TabType = "overview" | "new" | "map" | "analytics" | "departments" | "staff" | "alerts";
 
 export default function AdminDashboard() {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -29,6 +38,7 @@ export default function AdminDashboard() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
 
   const stats = {
     total: issues.length,
@@ -142,17 +152,24 @@ export default function AdminDashboard() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminHeader />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Monitor and manage all citizen reports</p>
-        </div>
+  // Category distribution for pie chart
+  const categoryData = [
+    { name: "Streetlights", value: Math.floor(issues.length * 0.17), color: "#8B5CF6", percentage: "17%" },
+    { name: "Drainage", value: Math.floor(issues.length * 0.17), color: "#EC4899", percentage: "17%" },
+    { name: "Garbage", value: Math.floor(issues.length * 0.17), color: "#F59E0B", percentage: "17%" },
+    { name: "Potholes", value: Math.floor(issues.length * 0.17), color: "#3B82F6", percentage: "17%" },
+    { name: "Road Damage", value: Math.floor(issues.length * 0.17), color: "#10B981", percentage: "17%" },
+    { name: "Water Supply", value: Math.floor(issues.length * 0.17), color: "#06B6D4", percentage: "17%" },
+  ];
 
+  // Month labels for trend chart
+  const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+  const totalReportsData = [12, 14, 13, 15, 14, 16];
+  const resolvedReportsData = [10, 11, 11, 12, 12, 13];
+
+  function renderOverviewTab() {
+    return (
+      <>
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           <Card className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
@@ -410,7 +427,7 @@ export default function AdminDashboard() {
                           {issue.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <button
                           onClick={() => setSelectedIssue(issue)}
                           className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -425,6 +442,339 @@ export default function AdminDashboard() {
             </table>
           </div>
         </Card>
+      </>
+    );
+  }
+
+  function renderAnalyticsTab() {
+    return (
+      <>
+        {/* Analytics Header */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Analytics & Reports</h2>
+          <p className="text-gray-600 mt-1">Visual insights and performance metrics</p>
+        </div>
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Reports by Category - Pie Chart */}
+          <Card className="bg-white border-0 shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Reports by Category</h3>
+            <div className="flex items-center justify-center">
+              <div className="relative w-64 h-64">
+                <svg viewBox="0 0 200 200" className="w-full h-full">
+                  {categoryData.map((item, index) => {
+                    const total = categoryData.reduce((sum, d) => sum + d.value, 0);
+                    let currentAngle = 0;
+                    const angles = categoryData.map(d => {
+                      const angle = (d.value / total) * 360;
+                      const result = { start: currentAngle, angle };
+                      currentAngle += angle;
+                      return result;
+                    });
+                    
+                    const angleData = angles[index];
+                    if (!angleData) return null;
+                    
+                    const { start, angle } = angleData;
+                    const startAngle = (start - 90) * (Math.PI / 180);
+                    const endAngle = (start + angle - 90) * (Math.PI / 180);
+                    
+                    const x1 = 100 + 80 * Math.cos(startAngle);
+                    const y1 = 100 + 80 * Math.sin(startAngle);
+                    const x2 = 100 + 80 * Math.cos(endAngle);
+                    const y2 = 100 + 80 * Math.sin(endAngle);
+                    
+                    const largeArc = angle > 180 ? 1 : 0;
+                    
+                    return (
+                      <path
+                        key={item.name}
+                        d={`M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                        fill={item.color}
+                        className="hover:opacity-80 transition-opacity cursor-pointer"
+                      />
+                    );
+                  })}
+                </svg>
+              </div>
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              {categoryData.map(item => (
+                <div key={item.name} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                  <span className="text-sm text-gray-700">{item.name}: {item.percentage}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Reports by Status - Bar Chart */}
+          <Card className="bg-white border-0 shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Reports by Status</h3>
+            <div className="h-64 flex items-end justify-around gap-4 px-4">
+              <div className="flex flex-col items-center flex-1">
+                <div className="w-full bg-red-500 rounded-t-lg transition-all hover:bg-red-600" style={{ height: `${(stats.pending / stats.total) * 100}%`, minHeight: "40px" }}></div>
+                <div className="mt-3 text-center">
+                  <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                  <p className="text-xs text-gray-600 mt-1">Pending</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-center flex-1">
+                <div className="w-full bg-yellow-500 rounded-t-lg transition-all hover:bg-yellow-600" style={{ height: `${(stats.inProgress / stats.total) * 100}%`, minHeight: "40px" }}></div>
+                <div className="mt-3 text-center">
+                  <p className="text-2xl font-bold text-gray-900">{stats.inProgress}</p>
+                  <p className="text-xs text-gray-600 mt-1">In Progress</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-center flex-1">
+                <div className="w-full bg-green-500 rounded-t-lg transition-all hover:bg-green-600" style={{ height: `${(stats.resolved / stats.total) * 100}%`, minHeight: "40px" }}></div>
+                <div className="mt-3 text-center">
+                  <p className="text-2xl font-bold text-gray-900">{stats.resolved}</p>
+                  <p className="text-xs text-gray-600 mt-1">Resolved</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Monthly Trend - Line Chart */}
+        <Card className="bg-white border-0 shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Monthly Trend</h3>
+          <div className="h-80">
+            <div className="relative h-full">
+              {/* Y-axis labels */}
+              <div className="absolute left-0 top-0 bottom-12 flex flex-col justify-between text-xs text-gray-500 w-8">
+                <span>24</span>
+                <span>21</span>
+                <span>18</span>
+                <span>15</span>
+                <span>12</span>
+                <span>9</span>
+                <span>6</span>
+                <span>3</span>
+                <span>0</span>
+              </div>
+              
+              {/* Chart area */}
+              <div className="ml-12 h-full pb-12">
+                <svg viewBox="0 0 600 300" className="w-full h-full">
+                  {/* Grid lines */}
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                    <line
+                      key={i}
+                      x1="0"
+                      y1={i * 37.5}
+                      x2="600"
+                      y2={i * 37.5}
+                      stroke="#e5e7eb"
+                      strokeWidth="1"
+                    />
+                  ))}
+                  
+                  {/* Total Reports Line */}
+                  <polyline
+                    points={totalReportsData.map((val, i) => `${i * 120},${300 - (val / 24) * 300}`).join(" ")}
+                    fill="none"
+                    stroke="#3B82F6"
+                    strokeWidth="3"
+                    className="transition-all"
+                  />
+                  {totalReportsData.map((val, i) => (
+                    <circle
+                      key={`total-${i}`}
+                      cx={i * 120}
+                      cy={300 - (val / 24) * 300}
+                      r="5"
+                      fill="#3B82F6"
+                      className="hover:r-7 transition-all cursor-pointer"
+                    />
+                  ))}
+                  
+                  {/* Resolved Reports Line */}
+                  <polyline
+                    points={resolvedReportsData.map((val, i) => `${i * 120},${300 - (val / 24) * 300}`).join(" ")}
+                    fill="none"
+                    stroke="#10B981"
+                    strokeWidth="3"
+                    className="transition-all"
+                  />
+                  {resolvedReportsData.map((val, i) => (
+                    <circle
+                      key={`resolved-${i}`}
+                      cx={i * 120}
+                      cy={300 - (val / 24) * 300}
+                      r="5"
+                      fill="#10B981"
+                      className="hover:r-7 transition-all cursor-pointer"
+                    />
+                  ))}
+                </svg>
+                
+                {/* X-axis labels */}
+                <div className="flex justify-around mt-2 text-xs text-gray-500">
+                  {monthLabels.map(month => (
+                    <span key={month}>{month}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Legend */}
+            <div className="flex justify-center gap-6 mt-6">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-1 bg-blue-500 rounded"></div>
+                <span className="text-sm text-gray-700">Total Reports</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-1 bg-green-500 rounded"></div>
+                <span className="text-sm text-gray-700">Resolved</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <AdminHeader />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Authority Dashboard</h1>
+          <p className="text-gray-600 mt-1">Monitor and manage all civic issue reports from your jurisdiction</p>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="mb-8 border-b border-gray-200">
+          <nav className="flex gap-1 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                activeTab === "overview"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab("new")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                activeTab === "new"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              }`}
+            >
+              <Plus className="w-4 h-4" />
+              New
+              <Badge className="bg-red-500 text-white text-xs px-2 py-0.5">2</Badge>
+            </button>
+            <button
+              onClick={() => setActiveTab("map")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                activeTab === "map"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              }`}
+            >
+              <Map className="w-4 h-4" />
+              Map
+            </button>
+            <button
+              onClick={() => setActiveTab("analytics")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                activeTab === "analytics"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </button>
+            <button
+              onClick={() => setActiveTab("departments")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                activeTab === "departments"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              Departments
+            </button>
+            <button
+              onClick={() => setActiveTab("staff")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                activeTab === "staff"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              }`}
+            >
+              <UsersIcon className="w-4 h-4" />
+              Staff
+            </button>
+            <button
+              onClick={() => setActiveTab("alerts")}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                activeTab === "alerts"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              }`}
+            >
+              <Bell className="w-4 h-4" />
+              Alerts
+              <Badge className="bg-red-500 text-white text-xs px-2 py-0.5">3</Badge>
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "overview" && (
+          <div className="space-y-8">{renderOverviewTab()}</div>
+        )}
+        {activeTab === "analytics" && (
+          <div className="space-y-8">{renderAnalyticsTab()}</div>
+        )}
+        {activeTab === "new" && (
+          <div className="text-center py-12">
+            <Plus className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">New Reports</h3>
+            <p className="text-gray-600">View and manage newly submitted reports</p>
+          </div>
+        )}
+        {activeTab === "map" && (
+          <div className="text-center py-12">
+            <Map className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Map View</h3>
+            <p className="text-gray-600">Visualize all reports on an interactive map</p>
+          </div>
+        )}
+        {activeTab === "departments" && (
+          <div className="text-center py-12">
+            <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Departments</h3>
+            <p className="text-gray-600">Manage departments and their responsibilities</p>
+          </div>
+        )}
+        {activeTab === "staff" && (
+          <div className="text-center py-12">
+            <UsersIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Staff Management</h3>
+            <p className="text-gray-600">View and manage staff members</p>
+          </div>
+        )}
+        {activeTab === "alerts" && (
+          <div className="text-center py-12">
+            <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Alerts</h3>
+            <p className="text-gray-600">View important notifications and alerts</p>
+          </div>
+        )}
       </main>
 
       {/* Issue Detail Modal */}
