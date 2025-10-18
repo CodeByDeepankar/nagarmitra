@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DashboardHeader } from './DashboardHeader';
-import DashboardStats from './DashboardStats';
+import { DashboardStats } from './DashboardStats';
 import { MyReports } from './MyReports';
 import { MapView } from './MapView';
 import { ReportForm } from './ReportForm';
@@ -9,17 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Plus, FileText, Map } from 'lucide-react';
 import { Toaster } from './ui/sonner';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getAllUserReports, getReportsByStatus } from '../data/mockData';
 
 export default function CivilianDashboard() {
   const { t } = useLanguage();
   const [reportFormOpen, setReportFormOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('my-reports');
-
-  const userReports = getAllUserReports();
-  const pendingReports = getReportsByStatus('pending');
-  const inProgressReports = getReportsByStatus('in-progress');
-  const resolvedReports = getReportsByStatus('resolved');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
@@ -34,12 +28,7 @@ export default function CivilianDashboard() {
           </p>
 
           {/* Stats Overview */}
-          <DashboardStats
-            totalReports={userReports.length}
-            pending={pendingReports.length}
-            inProgress={inProgressReports.length}
-            resolved={resolvedReports.length}
-          />
+          <DashboardStats />
         </div>
 
         {/* Main Action Button */}
