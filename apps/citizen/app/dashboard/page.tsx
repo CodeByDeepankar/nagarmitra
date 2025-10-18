@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { supabase } from "@repo/lib/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 import type { Issue } from "@repo/lib/types";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { Button } from "../components/ui/button";
@@ -15,14 +15,9 @@ import {
   Plus, 
   FileText, 
   Map, 
-  TrendingUp, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle,
   MapPin,
   Calendar,
   Eye,
-  Filter,
   Search,
   Users
 } from "lucide-react";
@@ -31,24 +26,12 @@ import IssueDetailModal from "./IssueDetailModal";
 import DashboardStats from "../components/DashboardStats";
 import { DashboardHeader } from "../components/DashboardHeader";
 
+
 // Dynamic import for MapView to avoid SSR issues with Leaflet
 const MapView = dynamic(
   () => import("../components/MapView").then((mod) => mod.MapView),
   { ssr: false }
 );
-
-const getBadgeVariant = (status: string) => {
-  switch (status) {
-    case 'Pending':
-      return 'pending';
-    case 'In Progress':
-      return 'progress';
-    case 'Resolved':
-      return 'resolved';
-    default:
-      return 'default';
-  }
-};
 
 const getCategoryColor = (category: string) => {
   const colors: Record<string, string> = {
@@ -73,11 +56,17 @@ function DashboardPageContent() {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Add user state
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
       const { data, error } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error("Failed to load user profile", error);
+        return;
+      }
+
       if (data?.user) {
         setUser(data.user);
       }

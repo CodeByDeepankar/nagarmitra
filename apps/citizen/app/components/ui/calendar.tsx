@@ -13,6 +13,15 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: React.ComponentProps<typeof DayPicker>) {
+  const navigationIcons = {
+    IconLeft: ({ className, ...iconProps }: { className?: string } & Record<string, unknown>) => (
+      <ChevronLeft className={cn("size-4", className)} {...iconProps} />
+    ),
+    IconRight: ({ className, ...iconProps }: { className?: string } & Record<string, unknown>) => (
+      <ChevronRight className={cn("size-4", className)} {...iconProps} />
+    ),
+  } satisfies Record<string, (props: Record<string, unknown>) => React.ReactElement>;
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -59,14 +68,7 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeft className={cn("size-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRight className={cn("size-4", className)} {...props} />
-        ),
-      }}
+      components={navigationIcons as React.ComponentProps<typeof DayPicker>["components"]}
       {...props}
     />
   );

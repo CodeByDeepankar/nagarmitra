@@ -8,9 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Alert, AlertDescription } from './ui/alert';
 import { Card } from './ui/card';
 import { Upload, MapPin, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { ReportCategory } from '../types/report';
+import { ReportCategory, Report } from '../types/report';
 import { findSimilarReport } from '../data/mockData';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface ReportFormProps {
   open: boolean;
@@ -27,7 +27,7 @@ export function ReportForm({ open, onClose }: ReportFormProps) {
   });
 
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [similarReport, setSimilarReport] = useState<any>(null);
+  const [similarReport, setSimilarReport] = useState<Report | null>(null);
   const [showSimilarCheck, setShowSimilarCheck] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
@@ -107,6 +107,9 @@ export function ReportForm({ open, onClose }: ReportFormProps) {
   };
 
   const incrementExistingReport = () => {
+    if (!similarReport) {
+      return;
+    }
     // In real app, this would increment the count in the database
     console.log('Incrementing count for report:', similarReport.id);
     toast.success('Your report has been added to the existing case!');

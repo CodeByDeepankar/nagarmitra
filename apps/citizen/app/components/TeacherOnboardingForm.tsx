@@ -113,7 +113,7 @@ export function TeacherOnboardingForm() {
               <Label>Your Role</Label>
               <RadioGroup
                 value={formData.role}
-                onValueChange={(value) => handleInputChange('role', value)}
+                onValueChange={(value: string) => handleInputChange('role', value)}
                 className="grid grid-cols-2 gap-4"
               >
                 <div className={`flex items-center space-x-2 p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${formData.role === 'class' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
@@ -143,7 +143,7 @@ export function TeacherOnboardingForm() {
             {formData.role === 'subject' && (
               <div className="space-y-2">
                 <Label>Subject</Label>
-                <Select value={formData.subject} onValueChange={(value) => handleInputChange('subject', value)}>
+                <Select value={formData.subject} onValueChange={(value: string) => handleInputChange('subject', value)}>
                   <SelectTrigger className={`transition-all duration-200 ${errors.subject ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}>
                     <SelectValue placeholder="Select your subject" />
                   </SelectTrigger>
@@ -162,7 +162,7 @@ export function TeacherOnboardingForm() {
             {formData.role === 'class' && (
               <div className="space-y-2">
                 <Label>Assigned Class</Label>
-                <Select value={formData.classAssigned} onValueChange={(value) => handleInputChange('classAssigned', value)}>
+                <Select value={formData.classAssigned} onValueChange={(value: string) => handleInputChange('classAssigned', value)}>
                   <SelectTrigger className={`transition-all duration-200 ${errors.classAssigned ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'}`}>
                     <SelectValue placeholder="Select your assigned class" />
                   </SelectTrigger>

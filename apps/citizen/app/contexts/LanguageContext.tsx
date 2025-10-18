@@ -86,7 +86,7 @@ const getTranslations = (lang: Language): Record<string, string> => {
       'reports.resolved': 'Resolved',
       'reports.inProgress': 'In Progress',
       'reports.pending': 'Pending',
-      'reports.empty': "You haven't submitted any reports yet.",
+  'reports.empty': 'You haven\'t submitted any reports yet.',
       'reports.noResolved': 'No resolved reports yet.',
       'reports.noInProgress': 'No reports in progress.',
       'reports.noPending': 'No pending reports.',

@@ -40,8 +40,9 @@ export default function Navbar() {
       setUser(null);
       router.push("/");
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to sign out");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to sign out";
+      toast.error(message);
     }
   };
 

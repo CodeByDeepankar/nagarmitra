@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { Button } from "@repo/ui/button";
-import { Input } from "@repo/ui/input";
 import { Card } from "@repo/ui/card";
 import { supabase } from "@repo/lib/supabaseClient";
 
@@ -39,8 +38,10 @@ export default function SignInPage() {
       toast.success("Signed in successfully!");
       router.push("/dashboard");
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to sign in");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to sign in";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -113,7 +114,7 @@ export default function SignInPage() {
             </Button>
 
             <p className="text-center text-sm text-gray-600">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/auth/signup" className="text-blue-600 hover:underline font-medium">
                 Sign up
               </Link>

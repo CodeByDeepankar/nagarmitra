@@ -83,43 +83,32 @@ export default function AdminDashboard() {
 
   async function handleUpdateIssue(issueId: string, updates: Partial<Issue>) {
     try {
-      console.log("Updating issue:", issueId);
-      console.log("Updates object:", JSON.stringify(updates, null, 2));
-      console.log("Update keys:", Object.keys(updates));
-      
-      const { data, error } = await supabase
-        .from("issues")
-        .update(updates)
-        .eq("id", issueId)
-        .select();
+      const response = await fetch(`/api/issues/${issueId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
 
-      if (error) {
-        console.error("Supabase error details:", {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-          fullError: error
-        });
-        throw new Error(error.message || "Failed to update issue");
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        throw new Error(result?.error || "Unable to update the report.");
       }
 
-      console.log("Update successful:", data);
+      const { data } = await response.json() as { data: Issue };
 
-      // Update local state
+      // Update local state with the server response
       setIssues(prevIssues =>
         prevIssues.map(issue =>
-          issue.id === issueId ? { ...issue, ...updates } : issue
+          issue.id === issueId ? data : issue
         )
       );
 
-      // Close modal
       setSelectedIssue(null);
-      
-      alert("Issue updated successfully!");
     } catch (error) {
       console.error("Error updating issue:", error);
-      alert(`Failed to update issue: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
     }
   }
 
