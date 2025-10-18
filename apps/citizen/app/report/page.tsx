@@ -4,6 +4,7 @@ import { useState, FormEvent, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import Autocomplete from "react-google-autocomplete";
 import { Textarea } from "../components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Label } from "../components/ui/label";
@@ -73,6 +74,7 @@ function ReportPageContent() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioPreviewUrl, setAudioPreviewUrl] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const GOOGLE_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -385,8 +387,8 @@ function ReportPageContent() {
         {/* Main Form */}
         <Card className="shadow-xl border-0">
           <CardHeader className="border-b">
-            <CardTitle className="text-2xl">Report a New Issue</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl text-gray-800">Report a New Issue</CardTitle>
+            <CardDescription className="text-gray-700">
               Submit details about a civic problem in your area
             </CardDescription>
           </CardHeader>
@@ -394,7 +396,7 @@ function ReportPageContent() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Image Upload */}
               <div className="space-y-2">
-                <Label className="text-base font-semibold">
+                <Label className="text-base font-semibold text-gray-800">
                   Upload Image *
                 </Label>
                 {!imagePreview ? (
@@ -410,8 +412,8 @@ function ReportPageContent() {
                       <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-3">
                         <Upload className="w-8 h-8 text-slate-500" />
                       </div>
-                      <p className="text-slate-600 font-medium mb-1">Click to upload image</p>
-                      <p className="text-sm text-slate-500">PNG, JPG up to 10MB</p>
+                      <p className="text-gray-800 font-medium mb-1">Click to upload image</p>
+                      <p className="text-sm text-gray-700">PNG, JPG up to 10MB</p>
                     </label>
                   </div>
                 ) : (
@@ -443,7 +445,7 @@ function ReportPageContent() {
 
               {/* Title */}
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-base font-semibold">
+                <Label htmlFor="title" className="text-base font-semibold text-gray-800">
                   Issue Title *
                 </Label>
                 <Input
@@ -467,7 +469,7 @@ function ReportPageContent() {
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-base font-semibold">
+                <Label htmlFor="description" className="text-base font-semibold text-gray-800">
                   Detailed Description *
                 </Label>
                 <div className="relative">
@@ -497,7 +499,7 @@ function ReportPageContent() {
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-sm text-gray-700">
                   Click the microphone icon to record a voice note that will be attached to your report
                 </p>
                 
@@ -542,7 +544,7 @@ function ReportPageContent() {
 
               {/* Category */}
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-base font-semibold">
+                <Label htmlFor="category" className="text-base font-semibold text-gray-800">
                   Category *
                 </Label>
                 <Select 
@@ -576,17 +578,52 @@ function ReportPageContent() {
 
               {/* Location */}
               <div className="space-y-2">
-                <Label className="text-base font-semibold">
+                <Label className="text-base font-semibold text-gray-800">
                   Location *
                 </Label>
                 <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="Enter address or get current location"
-                    className="flex-1"
-                  />
+                  <div className="flex-1">
+                    {GOOGLE_MAPS_KEY ? (
+                      <Autocomplete
+                        apiKey={GOOGLE_MAPS_KEY}
+                        placeholder="Enter address or get current location"
+                        className="w-full h-9 rounded-md border border-gray-300 px-3 py-1 text-base text-gray-900 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setFormData({ ...formData, location: e.target.value })
+                        }
+                        onPlaceSelected={(place) => {
+                          const address = place?.formatted_address || place?.name || "";
+                          const lat = place?.geometry?.location?.lat?.();
+                          const lng = place?.geometry?.location?.lng?.();
+
+                          setFormData((prev) => ({
+                            ...prev,
+                            location: address,
+                            latitude: typeof lat === 'number' ? lat : prev.latitude,
+                            longitude: typeof lng === 'number' ? lng : prev.longitude,
+                          }));
+                        }}
+                        options={{
+                          fields: ["formatted_address", "geometry", "name"],
+                          types: ["geocode"],
+                          // componentRestrictions: { country: "IN" },
+                        }}
+                        // ensure Places library
+                        libraries={["places"]}
+                      />
+                    ) : (
+                      <>
+                        <Input
+                          type="text"
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                          placeholder="Enter address (enable Google Places by setting NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)"
+                          className="flex-1"
+                        />
+                        <p className="mt-1 text-xs text-amber-700">Autocomplete disabled: missing Google Maps API key</p>
+                      </>
+                    )}
+                  </div>
                   <Button
                     type="button"
                     onClick={getCurrentLocation}
@@ -608,7 +645,7 @@ function ReportPageContent() {
                   </Button>
                 </div>
                 {formData.latitude && formData.longitude && (
-                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <p className="text-sm text-gray-700 flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 text-green-600" />
                     Coordinates: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
                   </p>

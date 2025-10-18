@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { supabase } from "@repo/lib/supabaseClient";
 import type { Issue } from "@repo/lib/types";
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -28,8 +29,13 @@ import {
 import { Input } from "../components/ui/input";
 import IssueDetailModal from "./IssueDetailModal";
 import DashboardStats from "../components/DashboardStats";
-import { MapView } from "../components/MapView";
 import { DashboardHeader } from "../components/DashboardHeader";
+
+// Dynamic import for MapView to avoid SSR issues with Leaflet
+const MapView = dynamic(
+  () => import("../components/MapView").then((mod) => mod.MapView),
+  { ssr: false }
+);
 
 const getBadgeVariant = (status: string) => {
   switch (status) {
@@ -66,6 +72,18 @@ function DashboardPageContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Add user state
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (data?.user) {
+        setUser(data.user);
+      }
+    }
+    fetchUser();
+  }, []);
 
   const fetchIssues = async () => {
     try {
@@ -135,7 +153,9 @@ function DashboardPageContent() {
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Welcome to Your Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Welcome, {user ? (user.user_metadata?.full_name || user.email) : "Loading..."}
+          </h1>
           <p className="text-gray-600">
             Track and manage all your civic issues
           </p>
@@ -154,11 +174,11 @@ function DashboardPageContent() {
         {/* Main Tabs: My Reports & Map View */}
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">
           <TabsList className="mb-6 bg-white shadow-sm">
-            <TabsTrigger value="my-reports" className="gap-2 px-6">
+            <TabsTrigger value="my-reports" className="gap-2 px-6 text-gray-800 font-semibold">
               <FileText className="w-4 h-4" />
               My Reports
             </TabsTrigger>
-            <TabsTrigger value="map-view" className="gap-2 px-6">
+            <TabsTrigger value="map-view" className="gap-2 px-6 text-gray-800 font-semibold">
               <Map className="w-4 h-4" />
               Map View
             </TabsTrigger>
@@ -171,7 +191,7 @@ function DashboardPageContent() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                   <div>
                     <CardTitle className="text-2xl mb-2">My Reports</CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-gray-700">
                       View and filter all your submitted civic issue reports
                     </CardDescription>
                   </div>
@@ -190,16 +210,16 @@ function DashboardPageContent() {
                 {/* Status Filter Tabs */}
                 <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="all" className="gap-2">
+                    <TabsTrigger value="all" className="gap-2 text-gray-700 font-medium">
                       All ({stats.total})
                     </TabsTrigger>
-                    <TabsTrigger value="resolved" className="gap-2">
+                    <TabsTrigger value="resolved" className="gap-2 text-gray-700 font-medium">
                       Resolved ({stats.resolved})
                     </TabsTrigger>
-                    <TabsTrigger value="in-progress" className="gap-2">
+                    <TabsTrigger value="in-progress" className="gap-2 text-gray-700 font-medium">
                       In Progress ({stats.inProgress})
                     </TabsTrigger>
-                    <TabsTrigger value="pending" className="gap-2">
+                    <TabsTrigger value="pending" className="gap-2 text-gray-700 font-medium">
                       Pending ({stats.pending})
                     </TabsTrigger>
                   </TabsList>
