@@ -41,23 +41,31 @@ const iconCreateFunction = (cluster: any) => {
   });
 };
 
-// Dummy data (replace with your actual data source)
-const pendingReports = [
-  { id: 1, location: [19.9, 83.1] },
-  { id: 2, location: [19.91, 83.11] },
-  { id: 3, location: [19.92, 83.12] },
-  { id: 4, location: [19.93, 83.13] },
-  { id: 5, location: [19.94, 83.14] },
-];
 
-const inProgressReports = [
-  { id: 6, location: [19.8, 83.2] },
-];
+export type Report = {
+  id: number;
+  location: [number, number];
+  [key: string]: any;
+};
 
-export function MapView() {
+
+
+type MapViewProps = {
+  pendingReports?: Report[];
+  inProgressReports?: Report[];
+};
+
+export function MapView(props: MapViewProps) {
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const position: [number, number] = [19.9, 83.1];
+  // Use empty arrays if props are undefined
+  const safePendingReports = props.pendingReports ?? [];
+  const safeInProgressReports = props.inProgressReports ?? [];
+  // Center the map on the first pending report, fallback to a default position
+  const position: [number, number] =
+    safePendingReports.length > 0 && safePendingReports[0]?.location
+      ? safePendingReports[0].location
+      : [19.9, 83.1];
 
   return (
     <div className="space-y-4">
@@ -94,7 +102,7 @@ export function MapView() {
             />
 
             {/* In Progress Reports: Green Pins */}
-            {inProgressReports.map((report) => (
+            {safeInProgressReports.map((report) => (
               <Marker
                 key={`inprogress-${report.id}`}
                 position={report.location as [number, number]}
@@ -110,7 +118,7 @@ export function MapView() {
 
             {/* Pending Reports: Clustered Red Pins */}
             <MarkerClusterGroup iconCreateFunction={iconCreateFunction}>
-              {pendingReports.map((report) => (
+              {safePendingReports.map((report) => (
                 <Marker
                   key={`pending-${report.id}`}
                   position={report.location as [number, number]}
@@ -132,7 +140,7 @@ export function MapView() {
           <div className="flex items-center gap-2">
             <MapPin className="w-5 h-5 text-blue-600" />
             <div>
-              <p className="text-slate-900">{pendingReports.length + inProgressReports.length}</p>
+              <p className="text-slate-900">{safePendingReports.length + safeInProgressReports.length}</p>
               <p className="text-xs text-slate-600">Active Reports</p>
             </div>
           </div>

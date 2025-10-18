@@ -351,7 +351,38 @@ function DashboardPageContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <MapView />
+                <MapView 
+                  pendingReports={filteredIssues.filter(i => i.status === 'Pending').map(i => {
+                    let location: [number, number] = [19.9, 83.1];
+                    if (Array.isArray(i.location) && i.location.length === 2 && typeof i.location[0] === 'number') {
+                      location = i.location as [number, number];
+                    } else if (i.location && typeof i.location === 'object' && 'lat' in i.location && 'lng' in i.location) {
+                      location = [Number(i.location.lat), Number(i.location.lng)];
+                    }
+                    // Remove id and location from spread
+                    const { id, location: _loc, ...rest } = i;
+                    return {
+                      id: typeof id === 'string' ? parseInt(id) : id,
+                      location,
+                      ...rest
+                    };
+                  })}
+                  inProgressReports={filteredIssues.filter(i => i.status === 'In Progress').map(i => {
+                    let location: [number, number] = [19.9, 83.1];
+                    if (Array.isArray(i.location) && i.location.length === 2 && typeof i.location[0] === 'number') {
+                      location = i.location as [number, number];
+                    } else if (i.location && typeof i.location === 'object' && 'lat' in i.location && 'lng' in i.location) {
+                      location = [Number(i.location.lat), Number(i.location.lng)];
+                    }
+                    // Remove id and location from spread
+                    const { id, location: _loc, ...rest } = i;
+                    return {
+                      id: typeof id === 'string' ? parseInt(id) : id,
+                      location,
+                      ...rest
+                    };
+                  })}
+                />
               </CardContent>
             </Card>
           </TabsContent>
