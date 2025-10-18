@@ -118,7 +118,7 @@ export default function ProgressTimeline({
 
         {/* Timeline events */}
         <div className="space-y-8">
-          {timeline.map((event, index) => (
+          {timeline.map((event) => (
             <div key={event.status} className="relative flex items-start gap-6">
               {/* Icon circle */}
               <div

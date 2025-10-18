@@ -9,7 +9,6 @@ import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { Badge } from './ui/badge';
 import { 
-  CheckCircle, 
   MapPin, 
   FileText, 
   DollarSign,

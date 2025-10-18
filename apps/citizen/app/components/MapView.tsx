@@ -1,3 +1,8 @@
+
+import { useState } from 'react';
+import { Card } from './ui/card';
+import { getAllReports } from '../data/mockData';
+import { Report } from '../types/report';
 'use client';
 
 import { useState } from 'react';

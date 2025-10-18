@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { supabase } from "@repo/lib/supabaseClient";
@@ -15,14 +14,9 @@ import {
   Plus, 
   FileText, 
   Map, 
-  TrendingUp, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle,
   MapPin,
   Calendar,
   Eye,
-  Filter,
   Search,
   Users
 } from "lucide-react";
@@ -30,6 +24,7 @@ import { Input } from "../components/ui/input";
 import IssueDetailModal from "./IssueDetailModal";
 import DashboardStats from "../components/DashboardStats";
 import { DashboardHeader } from "../components/DashboardHeader";
+
 
 // Dynamic import for MapView to avoid SSR issues with Leaflet
 const MapView = dynamic(

@@ -6,6 +6,7 @@ import { Button } from "./components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Badge } from "./components/ui/badge";
 import { supabase } from "@repo/lib/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 import { 
   AlertCircle, 
   CheckCircle, 
@@ -28,10 +29,13 @@ interface IssuesSummary {
   resolved: number;
 }
 
+type IssueRecord = {
+  status: string | null;
+};
+
 export default function Home() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [issuesSummary, setIssuesSummary] = useState<IssuesSummary | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadUserData() {
@@ -45,15 +49,16 @@ export default function Home() {
           .eq('user_id', user.id);
 
         if (issues && issues.length > 0) {
+          const typedIssues = issues as IssueRecord[];
           setIssuesSummary({
-            total: issues.length,
-            pending: issues.filter((i: any) => i.status === 'Pending').length,
-            inProgress: issues.filter((i: any) => i.status === 'In Progress').length,
-            resolved: issues.filter((i: any) => i.status === 'Resolved').length,
+            total: typedIssues.length,
+            pending: typedIssues.filter((issue) => issue.status === 'Pending').length,
+            inProgress: typedIssues.filter((issue) => issue.status === 'In Progress').length,
+            resolved: typedIssues.filter((issue) => issue.status === 'Resolved').length,
           });
         }
       }
-      setLoading(false);
+  // No loading indicator on landing page, so nothing to update here.
     }
     loadUserData();
   }, []);
