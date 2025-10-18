@@ -1,4 +1,23 @@
-// Utility to get display name from full_name and email
+'use client';
+
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { Bell, HelpCircle, Languages, LogOut, User as UserIcon } from 'lucide-react';
+
+import { supabase } from '@repo/lib/supabaseClient';
+import { useLanguage } from '../contexts/LanguageContext';
+import { HelpModal } from './HelpModal';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import { Button } from './ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
+
 function getDisplayName({ full_name, email }: { full_name?: string; email?: string }) {
   if (full_name && full_name.trim()) {
     return full_name;
@@ -10,31 +29,21 @@ function getDisplayName({ full_name, email }: { full_name?: string; email?: stri
   }
   return '';
 }
-import { useState } from 'react';
-import { Button } from './ui/button';
-import { Avatar, AvatarFallback } from './ui/avatar';
-import { Bell, User, LogOut, HelpCircle, Languages } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu';
-import { supabase } from '@repo/lib/supabaseClient';
-import { useEffect } from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
-import { HelpModal } from './HelpModal';
 
 export function DashboardHeader() {
   const { language, setLanguage, t } = useLanguage();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
-  
-  const [user, setUser] = useState<any>(null);
+
+  const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
     async function fetchUser() {
       const { data, error } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error('Failed to fetch the current user', error);
+        return;
+      }
+
       if (data?.user) {
         setUser(data.user);
       }
@@ -143,7 +152,7 @@ export function DashboardHeader() {
               <DropdownMenuLabel>{t('nav.profile')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
+                <UserIcon className="mr-2 h-4 w-4" />
                 <span>{t('nav.profile')}</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
