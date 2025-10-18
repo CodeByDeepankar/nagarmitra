@@ -190,33 +190,37 @@ export function MapView() {
 
       <ReportDetailsModal report={selectedReport} open={modalOpen} onClose={handleCloseModal} />
 
-      <style jsx global>{`
-        .custom-cluster {
-          border-radius: 50%;
-          background: #fff;
-          text-align: center;
-          font-weight: bold;
-          line-height: 40px;
-          width: 40px;
-          height: 40px;
-          box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
-        }
-        .red-cluster {
-          background: #ff4d4f;
-          color: #fff;
-          border: 2px solid #b71c1c;
-        }
-        .yellow-cluster {
-          background: #ffe066;
-          color: #333;
-          border: 2px solid #fbc02d;
-        }
-        .blue-cluster {
-          background: #4f8cff;
-          color: #fff;
-          border: 2px solid #1565c0;
-        }
-      `}</style>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .custom-cluster {
+              border-radius: 50%;
+              background: #fff;
+              text-align: center;
+              font-weight: bold;
+              line-height: 40px;
+              width: 40px;
+              height: 40px;
+              box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+            }
+            .red-cluster {
+              background: #ff4d4f;
+              color: #fff;
+              border: 2px solid #b71c1c;
+            }
+            .yellow-cluster {
+              background: #ffe066;
+              color: #333;
+              border: 2px solid #fbc02d;
+            }
+            .blue-cluster {
+              background: #4f8cff;
+              color: #fff;
+              border: 2px solid #1565c0;
+            }
+          `,
+        }}
+      />
     </div>
   );
 }

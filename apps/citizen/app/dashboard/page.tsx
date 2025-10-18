@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { supabase } from "@repo/lib/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 import type { Issue } from "@repo/lib/types";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { Button } from "../components/ui/button";
@@ -32,19 +33,6 @@ const MapView = dynamic(
   { ssr: false }
 );
 
-const getBadgeVariant = (status: string) => {
-  switch (status) {
-    case 'Pending':
-      return 'pending';
-    case 'In Progress':
-      return 'progress';
-    case 'Resolved':
-      return 'resolved';
-    default:
-      return 'default';
-  }
-};
-
 const getCategoryColor = (category: string) => {
   const colors: Record<string, string> = {
     pothole: 'bg-orange-100 text-orange-800 border-orange-200',
@@ -68,11 +56,17 @@ function DashboardPageContent() {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Add user state
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
       const { data, error } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error("Failed to load user profile", error);
+        return;
+      }
+
       if (data?.user) {
         setUser(data.user);
       }
