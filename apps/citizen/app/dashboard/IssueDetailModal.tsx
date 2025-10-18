@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -72,7 +71,6 @@ export default function IssueDetailModal({
   onOpenChange,
   onIssueUpdated,
 }: IssueDetailModalProps) {
-  const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -124,9 +122,11 @@ export default function IssueDetailModal({
       setShowEditDialog(false);
       onOpenChange(false);
       onIssueUpdated?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating issue:", error);
-      toast.error(error.message || "Failed to update issue");
+      const message =
+        error instanceof Error ? error.message : "Failed to update issue";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -146,9 +146,11 @@ export default function IssueDetailModal({
       setShowWithdrawDialog(false);
       onOpenChange(false);
       onIssueUpdated?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error withdrawing issue:", error);
-      toast.error(error.message || "Failed to withdraw issue");
+      const message =
+        error instanceof Error ? error.message : "Failed to withdraw issue";
+      toast.error(message);
     } finally {
       setLoading(false);
     }

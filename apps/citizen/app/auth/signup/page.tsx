@@ -46,8 +46,10 @@ export default function SignUpPage() {
       setTimeout(() => {
         router.push("/auth/signin");
       }, 2000);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to sign up");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to sign up";
+      toast.error(message);
     } finally {
       setLoading(false);
     }

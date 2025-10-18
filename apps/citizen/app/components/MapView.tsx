@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card } from './ui/card';
-import { Badge } from './ui/badge';
 import { getAllReports } from '../data/mockData';
 import { Report } from '../types/report';
 import { ReportDetailsModal } from './ReportDetailsModal';

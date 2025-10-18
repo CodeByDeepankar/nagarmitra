@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { Bell, User, LogOut, Menu, HelpCircle, Languages } from 'lucide-react';
+import { Bell, User, LogOut, HelpCircle, Languages } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -96,9 +96,11 @@ export default function IssueActions({ issue }: IssueActionsProps) {
       toast.success("Issue updated successfully! 🎉");
       setShowEditDialog(false);
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating issue:", error);
-      toast.error(error.message || "Failed to update issue");
+      const message =
+        error instanceof Error ? error.message : "Failed to update issue";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -117,9 +119,11 @@ export default function IssueActions({ issue }: IssueActionsProps) {
 
       toast.success("Issue withdrawn successfully");
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error withdrawing issue:", error);
-      toast.error(error.message || "Failed to withdraw issue");
+      const message =
+        error instanceof Error ? error.message : "Failed to withdraw issue";
+      toast.error(message);
     } finally {
       setLoading(false);
     }

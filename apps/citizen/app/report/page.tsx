@@ -9,25 +9,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { Label } from "../components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { supabase } from "@repo/lib/supabaseClient";
+import type { Issue } from "@repo/lib/types";
 import ProtectedRoute from "../components/ProtectedRoute";
 import toast from "react-hot-toast";
 import { 
-  Camera, 
   MapPin, 
-  FileText, 
   AlertCircle, 
   Upload,
   Loader2,
   CheckCircle,
   X,
-  Info,
   AlertTriangle,
   Mic,
   MicOff,
-  Play,
   Trash2
 } from "lucide-react";
-import { Alert, AlertDescription } from "../components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,12 +44,26 @@ const CATEGORIES = [
   { value: "other", label: "Other", icon: "📋" },
 ];
 
+const getLocationAddress = (location: Issue["location"]): string | null => {
+  if (
+    typeof location === "object" &&
+    location !== null &&
+    !Array.isArray(location) &&
+    "address" in location
+  ) {
+    const address = (location as { address?: unknown }).address;
+    return typeof address === "string" ? address : null;
+  }
+
+  return null;
+};
+
 function ReportPageContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
-  const [duplicateIssues, setDuplicateIssues] = useState<any[]>([]);
+  const [duplicateIssues, setDuplicateIssues] = useState<Issue[]>([]);
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [proceedWithSubmission, setProceedWithSubmission] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -258,10 +268,12 @@ function ReportPageContent() {
       if (error) throw error;
 
       // Filter by location similarity if coordinates available
-      let similarIssues = data || [];
+      let similarIssues: Issue[] = (data || []) as Issue[];
       if (formData.latitude && formData.longitude) {
-        similarIssues = similarIssues.filter((issue: any) => {
-          if (!issue.latitude || !issue.longitude) return false;
+        similarIssues = similarIssues.filter((issue) => {
+          if (issue.latitude === null || issue.longitude === null) {
+            return false;
+          }
           const distance = Math.sqrt(
             Math.pow(issue.latitude - formData.latitude!, 2) +
             Math.pow(issue.longitude - formData.longitude!, 2)
@@ -314,7 +326,7 @@ function ReportPageContent() {
       let imageUrl = "";
       if (imageFile) {
         const fileName = `${user.id}/${Date.now()}_${imageFile.name}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('issue-images')
           .upload(fileName, imageFile);
 
@@ -332,7 +344,7 @@ function ReportPageContent() {
       let audioUrl = "";
       if (audioFile) {
         const audioFileName = `${user.id}/${Date.now()}_${audioFile.name}`;
-        const { data: audioUploadData, error: audioUploadError } = await supabase.storage
+        const { error: audioUploadError } = await supabase.storage
           .from('issue-audio')
           .upload(audioFileName, audioFile);
 
@@ -371,9 +383,11 @@ function ReportPageContent() {
 
       toast.success("Issue reported successfully! 🎉");
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error reporting issue:", error);
-      toast.error(error.message || "Failed to report issue");
+      const message =
+        error instanceof Error ? error.message : "Failed to report issue";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -684,7 +698,7 @@ function ReportPageContent() {
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
-                            {issue.location?.address || 'No location'}
+                            {getLocationAddress(issue.location) || 'No location'}
                           </span>
                           <span className={`px-2 py-1 rounded-full font-medium ${
                             issue.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
