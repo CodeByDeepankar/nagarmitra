@@ -60,8 +60,18 @@ export default function Navbar() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
-            🏙️ Nagar Mitra
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-blue-600 transition-colors hover:text-blue-700"
+          >
+            <span className="h-10 w-10 overflow-hidden rounded-lg bg-white shadow-sm">
+              <img
+                src="/NagarMitra-logo.png"
+                alt="NagarMitra logo"
+                className="h-10 w-10 object-contain"
+              />
+            </span>
+            <span className="sr-only">NagarMitra</span>
           </Link>
 
           {/* Navigation Links */}
