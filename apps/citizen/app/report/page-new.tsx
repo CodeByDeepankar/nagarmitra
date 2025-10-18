@@ -244,8 +244,8 @@ function ReportPageContent() {
         {/* Main Form */}
         <Card className="shadow-xl border-0">
           <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-            <CardTitle className="text-2xl">Issue Details</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl text-gray-800">Issue Details</CardTitle>
+            <CardDescription className="text-gray-700">
               Fill in the information below. All fields marked with * are required.
             </CardDescription>
           </CardHeader>
@@ -253,7 +253,7 @@ function ReportPageContent() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Title */}
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-base font-semibold">
+                <Label htmlFor="title" className="text-base font-semibold text-gray-800">
                   Issue Title *
                 </Label>
                 <Input
@@ -277,7 +277,7 @@ function ReportPageContent() {
 
               {/* Category */}
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-base font-semibold">
+                <Label htmlFor="category" className="text-base font-semibold text-gray-800">
                   Category *
                 </Label>
                 <Select 
@@ -311,7 +311,7 @@ function ReportPageContent() {
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-base font-semibold">
+                <Label htmlFor="description" className="text-base font-semibold text-gray-800">
                   Description *
                 </Label>
                 <Textarea
@@ -325,7 +325,7 @@ function ReportPageContent() {
                   rows={5}
                   className={errors.description ? 'border-red-500' : ''}
                 />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-700">
                   {formData.description.length} / 20 minimum characters
                 </p>
                 {errors.description && (
@@ -338,7 +338,7 @@ function ReportPageContent() {
 
               {/* Image Upload */}
               <div className="space-y-2">
-                <Label className="text-base font-semibold">
+                <Label className="text-base font-semibold text-gray-800">
                   Photo Evidence *
                 </Label>
                 {!imagePreview ? (
@@ -354,8 +354,8 @@ function ReportPageContent() {
                       <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Camera className="w-8 h-8 text-blue-600" />
                       </div>
-                      <p className="text-gray-700 font-medium mb-1">Click to upload image</p>
-                      <p className="text-sm text-gray-500">PNG, JPG up to 10MB</p>
+                      <p className="text-gray-800 font-medium mb-1">Click to upload image</p>
+                      <p className="text-sm text-gray-700">PNG, JPG up to 10MB</p>
                     </label>
                   </div>
                 ) : (
@@ -387,7 +387,7 @@ function ReportPageContent() {
 
               {/* Location */}
               <div className="space-y-2">
-                <Label className="text-base font-semibold">
+                <Label className="text-base font-semibold text-gray-800">
                   Location
                 </Label>
                 <div className="flex gap-2">
@@ -419,7 +419,7 @@ function ReportPageContent() {
                   </Button>
                 </div>
                 {formData.latitude && formData.longitude && (
-                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <p className="text-sm text-gray-700 flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 text-green-600" />
                     Coordinates: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
                   </p>

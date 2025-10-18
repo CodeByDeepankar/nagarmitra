@@ -1,3 +1,15 @@
+// Utility to get display name from full_name and email
+function getDisplayName({ full_name, email }: { full_name?: string; email?: string }) {
+  if (full_name && full_name.trim()) {
+    return full_name;
+  }
+  if (email) {
+    const username = email.split('@')[0] || '';
+    const cleaned = username.replace(/[0-9]/g, '');
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+  return '';
+}
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -10,7 +22,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import { CURRENT_USER } from '../data/mockData';
+import { supabase } from '@repo/lib/supabaseClient';
+import { useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { HelpModal } from './HelpModal';
 
@@ -18,11 +31,20 @@ export function DashboardHeader() {
   const { language, setLanguage, t } = useLanguage();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   
-  const userInitials = CURRENT_USER
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase();
+  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    async function fetchUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (data?.user) {
+        setUser(data.user);
+      }
+    }
+    fetchUser();
+  }, []);
+
+  // Get initials from full_name or email
+  const displayName = user ? getDisplayName({ full_name: user.user_metadata?.full_name, email: user.email }) : '';
+  const userInitials = displayName ? displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase() : '?';
 
   const languages = [
     { code: 'en' as const, name: 'English', flag: '🇬🇧' },
@@ -112,7 +134,9 @@ export function DashboardHeader() {
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline text-slate-700">{CURRENT_USER}</span>
+                <span className="hidden sm:inline text-slate-700">
+                  {user ? displayName : "Loading..."}
+                </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
