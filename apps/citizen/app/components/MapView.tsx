@@ -59,6 +59,33 @@ const iconCreateFunction = (cluster: { getChildCount(): number }) => {
   });
 };
 
+
+
+export type Report = {
+  id: number;
+  location: [number, number];
+  [key: string]: any;
+};
+
+
+
+type MapViewProps = {
+  pendingReports?: Report[];
+  inProgressReports?: Report[];
+};
+
+export function MapView(props: MapViewProps) {
+  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  // Use empty arrays if props are undefined
+  const safePendingReports = props.pendingReports ?? [];
+  const safeInProgressReports = props.inProgressReports ?? [];
+  // Center the map on the first pending report, fallback to a default position
+  const position: [number, number] =
+    safePendingReports.length > 0 && safePendingReports[0]?.location
+      ? safePendingReports[0].location
+      : [19.9, 83.1];
+
 const FALLBACK_CENTER: LatLngExpression = [19.9, 83.1];
 
 const toLatLng = (report: Report): LatLngExpression => [report.location.lat, report.location.lng];
@@ -112,6 +139,7 @@ export function MapView() {
     setSelectedReport(null);
   };
 
+
   return (
     <div className="space-y-4">
       <Card className="p-4">
@@ -140,7 +168,12 @@ export function MapView() {
               attribution="&copy; OpenStreetMap contributors"
             />
 
+
+            {/* In Progress Reports: Green Pins */}
+            {safeInProgressReports.map((report) => (
+
             {inProgressReports.map((report) => (
+
               <Marker
                 key={`in-progress-${report.id}`}
                 position={toLatLng(report)}
@@ -152,7 +185,7 @@ export function MapView() {
             ))}
 
             <MarkerClusterGroup iconCreateFunction={iconCreateFunction}>
-              {pendingReports.map((report) => (
+              {safePendingReports.map((report) => (
                 <Marker
                   key={`pending-${report.id}`}
                   position={toLatLng(report)}
@@ -181,7 +214,11 @@ export function MapView() {
           <div className="flex items-center gap-2">
             <MapPin className="h-5 w-5 text-blue-600" />
             <div>
+
+              <p className="text-slate-900">{safePendingReports.length + safeInProgressReports.length}</p>
+
               <p className="text-slate-900">{activeReportCount}</p>
+
               <p className="text-xs text-slate-600">Active Reports</p>
             </div>
           </div>
