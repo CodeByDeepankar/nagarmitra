@@ -2,12 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database, Issue } from "@repo/lib/types";
 
-type RouteContext = {
-  params: {
-    id: string;
-  };
-};
-
 function createServiceClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -26,15 +20,19 @@ function createServiceClient() {
   });
 }
 
-export async function PATCH(request: Request, context: RouteContext) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const updates: Partial<Issue> = await request.json();
     const supabase = createServiceClient();
+    const { id } = await params;
 
     const { data, error } = await (supabase as any)
       .from("issues")
       .update(updates)
-      .eq("id", context.params.id)
+      .eq("id", id)
       .select()
       .single();
 
